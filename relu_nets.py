@@ -294,6 +294,17 @@ class ReLUNet(nn.Module):
         return output_vars
 
 
+    def transfer_weights(self, behavior, tau):
+        """
+         updates the weights and biases of self with the behaviour model
+
+         target = (tau*behavior) + ((1-tau)*target)
+        """
+        for i in range(len(self.fcs)):
+            for target_params, behavior_params in zip(self.fcs[i].parameters(), behavior.fcs[i].parameters()):
+                target_params.data.copy_((tau*behavior_params.data) + (1.0-tau)*target_params.data)
+        
+
 
 class SubReLUNet(ReLUNet):
     """ Expansion pack for ReLUNet which has some extra methods and 

@@ -28,6 +28,7 @@ class TrainParameters(ParameterObject):
 		ARGS:
 		trainset: torch.utils.data.DataLoader object of the training data
 		valset: torch.utils.data.DataLoader object of the validation data
+        num_epochs
 		optimizer: None or torch.optim object - if None will be
 				   initialized to optim.Adam object with default parameters
 		loss_function: None or loss object - if None will default to
