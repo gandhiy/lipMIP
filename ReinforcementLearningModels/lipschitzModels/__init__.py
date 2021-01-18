@@ -1,0 +1,2 @@
+# models in this folder make use of lipMIP to calculate the lipschitz constant of ReLUNets. The constant is then used to 
+# regularize the RL algorithm. Uses pytorch instead of keras because ReLUNets are built in pytorch
