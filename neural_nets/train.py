@@ -303,6 +303,19 @@ class XEntropyReg(Regularizer):
 			outputs = self.network(examples)
 		return self.scalar * nn.CrossEntropyLoss()(outputs, labels)
 
+class MeanSquaredReg(Regularizer):
+	def __init__(self, network, scalar=1.0):
+		super(MeanSquaredReg, self).__init__(scalar)
+		self.network = network
+		self.requires_ff = True
+
+	def __repr__(self):
+		return 'Mean Squared: (scalar: %.02e)' % self.scalar
+	
+	def forward(self, examples, labels, outputs=None):
+		if outputs is None:
+			outputs = self.network(examples)
+		return self.scalar * nn.MSELoss()(outputs, labels)
 
 class LpWeightReg(Regularizer):
 	def __init__(self, network=None, scalar=1.0, lp='l1'):
@@ -388,6 +401,7 @@ class ReluStability(Regularizer):
 
 
 
+
 class LipschitzReg(Regularizer):
 	""" Lipschitz regularization taken from this paper:
 		https://arxiv.org/pdf/1808.09540.pdf
@@ -395,10 +409,11 @@ class LipschitzReg(Regularizer):
 		    norm depending on the tv_or_max parameter.
 		    (loss is standard CrossEntropyLoss )
 	"""
-	def __init__(self, network=None, scalar=1.0, tv_or_max='tv', lp_norm=1):
+	def __init__(self, network=None, scalar=1.0, tv_or_max='tv', lp_norm=1, loss_function=nn.CrossEntropyLoss):
 		super(LipschitzReg, self).__init__(scalar)
 		self.network = network
 		self.requires_ff = False # Got to do a custom FF here
+		self.loss_fn = loss_function
 
 
 		assert tv_or_max in ['tv', 'max']
@@ -415,7 +430,7 @@ class LipschitzReg(Regularizer):
 		N = examples.shape[0]
 		new_ex = self.network.tensorfy_clone(examples, requires_grad=True)
 		outputs = self.network(new_ex)
-		loss = nn.CrossEntropyLoss()(outputs, labels)
+		loss = self.loss_fn()(outputs, labels)
 		grads = autograd.grad(loss, new_ex, create_graph=True)[0]
 
 		grad_norms = grads.view(N, -1).norm(p=self.lp_norm, dim=1)
